@@ -1,16 +1,18 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { HeaderComponent } from './pages/header.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, HeaderComponent],
   template: `
-    <h1>Welcome to {{title}}!</h1>
-
-    <router-outlet />
+    <div class="p-3">
+      <app-header/>
+      <router-outlet/>
+    </div>
   `,
   styles: [],
 })
 export class AppComponent {
-  title = 'primeng-theme-one';
+
 }
