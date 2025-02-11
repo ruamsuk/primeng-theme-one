@@ -6,11 +6,6 @@
 
 @import "tailwindcss";
 
-@theme {
-  --font-saraban: Sarabun, sans-serrif;
-  --font-thasadith: Thasadith, sans-serrif;
-}
-
 html {
   font-family: Sarabun, "Leelawadee UI", sans-serif;
 }
