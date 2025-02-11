@@ -1,22 +1,23 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { MenuItem } from 'primeng/api';
-import { Menubar } from 'primeng/menubar';
-import { FormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
-import { Tooltip } from 'primeng/tooltip';
+import { AuthService } from '../services/auth.service';
+import { ToastService } from '../services/toast.service';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { Router } from '@angular/router';
+import { UserProfileComponent } from '../auth/user-profile.component';
+import { SharedModule } from '../shared/shared.module';
 
 @Component({
   selector: 'app-header',
   imports: [
-    Menubar,
-    FormsModule,
+    SharedModule,
     NgClass,
-    Tooltip
   ],
   template: `
     <p-menubar [model]="items">
       <ng-template #start>
-        <img src="/images/primeng-logo.png" alt="logo">
+        <img src="/images/primeng.png" alt="logo">
       </ng-template>
       <ng-template #end>
         <span pTooltip="{{tooltipMsg()}}" class="cursor-pointer pi"
@@ -27,8 +28,17 @@ import { Tooltip } from 'primeng/tooltip';
   `,
   styles: ``
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
+  private readonly authService: AuthService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly messageService: ToastService = inject(ToastService);
+  public dialogService: DialogService = inject(DialogService);
+
   items: MenuItem[] | undefined;
+  subitems: MenuItem[] | undefined;
+  ref: DynamicDialogRef | undefined;
+  currentUser = this.authService.currentUser;
+
   isDarkMode = signal(false);
   tooltipMsg = signal('Switch to Dark');
 
@@ -46,49 +56,153 @@ export class HeaderComponent implements OnInit {
     this.items = [
       {
         label: 'Home',
-        icon: 'pi pi-home'
+        route: 'landing',
+        icon: 'pi pi-home',
       },
       {
-        label: 'Features',
-        icon: 'pi pi-star'
-      },
-      {
-        label: 'Projects',
-        icon: 'pi pi-search',
+        label: 'ระบบบัญชี',
+        icon: 'pi pi-database',
         items: [
           {
-            label: 'Components',
-            icon: 'pi pi-bolt'
+            label: 'รายการบัญชี',
+            icon: 'pi pi-list',
+            route: '/account/account-list',
           },
           {
-            label: 'Blocks',
-            icon: 'pi pi-server'
+            label: 'ตามช่วงเวลา',
+            icon: 'pi pi-calendar-clock',
+            route: '/account/between',
           },
           {
-            label: 'UI Kit',
-            icon: 'pi pi-pencil'
+            label: 'ช่วงเวลาและรายการ',
+            icon: 'pi pi-calendar-plus',
+            route: '/account/between-detail',
           },
           {
-            label: 'Templates',
-            icon: 'pi pi-palette',
-            items: [
-              {
-                label: 'Apollo',
-                icon: 'pi pi-palette'
-              },
-              {
-                label: 'Ultima',
-                icon: 'pi pi-palette'
-              }
-            ]
-          }
-        ]
+            label: 'ตลอดทั้งปี',
+            icon: 'pi pi-book',
+            route: '/account/allyear',
+          },
+        ],
       },
       {
-        label: 'Contact',
-        icon: 'pi pi-envelope'
+        label: 'บัตรเครดิต',
+        icon: 'pi pi-credit-card',
+        items: [
+          {
+            label: 'รายการเครดิต',
+            icon: 'pi pi-list',
+            route: '/credit/credit-list',
+          },
+          {
+            label: 'ตามช่วงเวลา',
+            icon: 'pi pi-clock',
+            route: '/credit/between',
+          },
+          {
+            label: 'ตลอดปี',
+            icon: 'pi pi-book',
+            route: '/credit/allyear',
+          },
+        ],
+      },
+      {
+        label: 'ความดันโลหิต',
+        icon: 'pi pi-heart',
+        items: [
+          {
+            label: 'Blood List',
+            icon: 'pi pi-list',
+            route: '/bloods/blood-list',
+          },
+          {
+            label: 'Time period',
+            icon: 'pi pi-calendar-clock',
+            route: '/bloods/blood-time-period',
+          },
+          {
+            label: 'Year period',
+            icon: 'pi pi-calendar-plus',
+            route: '/bloods/blood-year-period',
+          },
+        ],
+      },
+      {
+        label: 'Monthly',
+        icon: 'pi pi-calendar',
+        items: [
+          {
+            label: 'แสดงวันที่กำหนด',
+            icon: 'pi pi-book',
+            route: '/monthly',
+          },
+        ],
+      },
+      {
+        label: 'Manage users',
+        icon: 'pi pi-users',
+        items: [
+          {
+            label: 'Users list',
+            icon: 'pi pi-users',
+            route: '/manage-user',
+          },
+        ],
+      },
+      {
+        label: 'Logout',
+        icon: 'pi pi-sign-out',
+        command: () => {
+          this.logout().then();
+        },
+      },
+    ];
+    this.subitems = [
+      {
+        label: 'Profile',
+        icon: 'pi pi-user',
+        command: () => this.userDialog(),
+      },
+      {
+        label: 'Logout',
+        icon: 'pi pi-sign-out',
+        command: () => this.logout(),
+      },
+      {
+        label: 'Help',
+        icon: 'pi pi-question',
+        command: () => {
+          this.messageService.showInfo(
+            'Information message',
+            'This is a information message',
+          );
+        },
       }
     ];
   }
 
+  async logout(): Promise<void> {
+    await this.authService
+      .logout()
+      .then(() => this.router.navigateByUrl('/auth/login'));
+  }
+
+  private userDialog() {
+    this.ref = this.dialogService.open(UserProfileComponent, {
+      data: this.currentUser(),
+      header: 'User Details',
+      width: '500px',
+      modal: true,
+      contentStyle: {overflow: 'auto'},
+      breakpoints: {
+        '960px': '500px',
+        '640px': '500px',
+      },
+      closable: true,
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.ref) this.ref.destroy();
+  }
 }
