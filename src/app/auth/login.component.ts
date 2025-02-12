@@ -1,12 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { AuthService } from '../services/auth.service';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ForgotPasswordComponent } from './forgot-password.component';
 import { NgClass, NgOptimizedImage } from '@angular/common';
 import { SharedModule } from '../shared/shared.module';
+import { ToastService } from '../services/toast.service';
 
 
 @Component({
@@ -19,12 +19,12 @@ import { SharedModule } from '../shared/shared.module';
   ],
   template: `
     <!--, background: '#1f2937' -->
-    <div class="flex justify-center items-center h-screen gap-y-5">
+    <div class="center h-screen gap-y-5">
       <div>
         <form [formGroup]="loginForm" (ngSubmit)="login()">
-          <p-card [style]="{width:'360px'}">
+          <p-card [style]="{width:'360px'}" styleClass="drop-shadow-md">
             <div class="flex justify-center">
-              <img ngSrc="/images/primeng.png" alt="logo" height="51" width="48">
+              <img ngSrc="/images/primeng.png" alt="logo" priority height="51" width="48">
             </div>
             <div class="flex justify-center text-900 text-2xl font-medium my-5">
               Account App.
@@ -75,7 +75,7 @@ import { SharedModule } from '../shared/shared.module';
                 }
                 <div class="my-2">
                   <span
-                    class="sarabun text-sky-400 italic cursor-pointer hover:text-sky-300"
+                    class="sarabun text-sky-400 italic cursor-pointer hover:text-sky-300 hover:underline underline-offset-2"
                     (click)="forgotPassword()"
                   >
                     ลืมรหัสผ่าน
@@ -141,7 +141,7 @@ import { SharedModule } from '../shared/shared.module';
 export class LoginComponent {
   authService = inject(AuthService);
   dialogService = inject(DialogService);
-  message = inject(MessageService);
+  message = inject(ToastService);
   router = inject(Router);
   ref: DynamicDialogRef | undefined;
   loading = signal(false);
@@ -196,12 +196,7 @@ export class LoginComponent {
         const user = userCredential.user;
 
         if (!user.emailVerified) {
-          this.message.add({
-            severity: 'warn',
-            summary: 'Warning',
-            detail: 'Please verify your email before logging in',
-            life: 5000
-          });
+          this.message.showWarn('Warning', 'Please verify your email before logging in');
           this.loading.set(false);
           await this.router.navigateByUrl('/auth/login');
           return;
@@ -218,14 +213,14 @@ export class LoginComponent {
             ...userProfile,
           };
           localStorage.setItem('user', JSON.stringify(userData));
-          this.message.add({severity: 'success', summary: 'Success', detail: 'Login successful'});
+          this.message.showSuccess('Success', 'Login successful');
         } else {
-          this.message.add({severity: 'error', summary: 'Error', detail: 'User not found.'});
+          this.message.showError('Error', 'User not found.');
         }
       },
       error: (error) => {
         this.setTimer();
-        this.message.add({severity: 'error', summary: 'Error', detail: error.message});
+        this.message.showError('Error', `${error.message}`);
       },
       complete: () => {
         this.setTimer();
@@ -257,13 +252,11 @@ export class LoginComponent {
   googleSignIn() {
     this.authService.googleSignIn().then(
       () => {
-        this.message.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Google Login successful',
-          life: 4000
-        });
-        this.router.navigateByUrl('/home');
+        this.message.showSuccess(
+          'Success',
+          'Google Login successful',
+        );
+        this.router.navigateByUrl('/home').then();
       }).catch((error) => {
       console.error(error);
     });

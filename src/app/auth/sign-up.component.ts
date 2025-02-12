@@ -7,13 +7,13 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { NgClass, NgOptimizedImage } from '@angular/common';
 
 @Component({
-	selector: 'app-sign-up',
-	imports: [SharedModule, NgClass, NgOptimizedImage],
-	template: `
+  selector: 'app-sign-up',
+  imports: [SharedModule, NgClass, NgOptimizedImage],
+  template: `
     <div class="center h-screen gap-y-5">
       <div>
         <form [formGroup]="signUpForm" (ngSubmit)="onSignUp()">
-          <p-card [style]="{width: '360px', background: '#1f2937'}">
+          <p-card [style]="{width: '360px'}" styleClass="drop-shadow-md">
             <div class="flex justify-center">
               <img ngSrc="/images/primeng-logo.png" alt="logo" height="43" width="40">
             </div>
@@ -28,11 +28,11 @@ import { NgClass, NgOptimizedImage } from '@angular/common';
                   <label>Email</label>
                 }
                 <input
-                        type="email"
-                        pInputText
-                        formControlName="email"
-                        name="email"
-                        class="w-full {{isEmailValid ? 'ng-valid ng-dirty' : ''}} mt-1">
+                  type="email"
+                  pInputText
+                  formControlName="email"
+                  name="email"
+                  class="w-full {{isEmailValid ? 'ng-valid ng-dirty' : ''}} mt-1">
                 @if (isEmailValid; as message) {
                   <small class="block p-error pl-2 py-2 font-semibold">
                     {{ message }}
@@ -47,16 +47,16 @@ import { NgClass, NgOptimizedImage } from '@angular/common';
                 <label>Password</label>
               }
               <p-password
-                      class="w-full {{
+                class="w-full {{
                     isValidPassword ? 'ng-invalid ng-dirty' : ''
                   }} mt-2"
-                      [feedback]="false"
-                      formControlName="password"
-                      styleClass="p-password p-component p-inputwrapper p-input-icon-right"
-                      [style]="{ width: '100%' }"
-                      [inputStyle]="{ width: '100%' }"
-                      [toggleMask]="true"
-                      autocomplete="password"
+                [feedback]="false"
+                formControlName="password"
+                styleClass="p-password p-component p-inputwrapper p-input-icon-right"
+                [style]="{ width: '100%' }"
+                [inputStyle]="{ width: '100%' }"
+                [toggleMask]="true"
+                autocomplete="password"
               />
               @if (isValidPassword; as messages) {
                 <small class="block p-error pl-2 font-semibold">
@@ -69,11 +69,11 @@ import { NgClass, NgOptimizedImage } from '@angular/common';
                 DisplayName
               </label><small class="text-slate-400">(Optional)</small>
               <input
-                      type="text"
-                      pInputText
-                      formControlName="displayName"
-                      name="displayName"
-                      class="w-full">
+                type="text"
+                pInputText
+                formControlName="displayName"
+                name="displayName"
+                class="w-full">
 
             </div>
             <ng-template #footer>
@@ -110,11 +110,11 @@ import { NgClass, NgOptimizedImage } from '@angular/common';
               </div>
               <div class="center">
                 <p-button
-                        label="SignIn With Google"
-                        icon="pi pi-google"
-                        [loading]="loading()"
-                        severity="secondary"
-                        styleClass="w-full" (click)="googleSignIn()"/>
+                  label="SignIn With Google"
+                  icon="pi pi-google"
+                  [loading]="loading()"
+                  severity="secondary"
+                  styleClass="w-full" (click)="googleSignIn()"/>
               </div>
               <div class="my-5">
                 <div class="flex-grow h-px bg-gray-400"></div>
@@ -129,87 +129,87 @@ import { NgClass, NgOptimizedImage } from '@angular/common';
 
       </div>
     </div>
-	`,
-	styles: `
+  `,
+  styles: `
   `
 })
 export class SignUpComponent {
-	private authService: AuthService = inject(AuthService);
-	private toastService: ToastService = inject(ToastService);
-	private router: Router = inject(Router);
-	private formBuilder: FormBuilder = inject(FormBuilder);
+  private authService: AuthService = inject(AuthService);
+  private toastService: ToastService = inject(ToastService);
+  private router: Router = inject(Router);
+  private formBuilder: FormBuilder = inject(FormBuilder);
 
-	/** Variable */
-	loading = signal<boolean>(false);
+  /** Variable */
+  loading = signal<boolean>(false);
 
-	/** SignUp Form */
-	signUpForm = this.formBuilder.group({
-		displayName: [''],
-		email: ['', [Validators.required, Validators.pattern('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$')]],
-		password: ['', [Validators.required, Validators.minLength(8)]],
-	});
+  /** SignUp Form */
+  signUpForm = this.formBuilder.group({
+    displayName: [''],
+    email: ['', [Validators.required, Validators.pattern('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$')]],
+    password: ['', [Validators.required, Validators.minLength(8)]],
+  });
 
-	/** Check Validators */
-	get isEmailValid(): string | boolean {
-		const control = this.signUpForm.get('email');
+  /** Check Validators */
+  get isEmailValid(): string | boolean {
+    const control = this.signUpForm.get('email');
 
-		const isInvalid = control?.invalid && control.touched;
+    const isInvalid = control?.invalid && control.touched;
 
-		if (isInvalid) {
-			return control.hasError('required')
-					? 'This field is required'
-					: 'Enter a valid email';
-		}
+    if (isInvalid) {
+      return control.hasError('required')
+        ? 'This field is required'
+        : 'Enter a valid email';
+    }
 
-		return false;
-	}
+    return false;
+  }
 
-	get isValidPassword(): string | boolean {
-		const control = this.signUpForm.get('password');
-		const isInvalid = control?.invalid && control.touched;
+  get isValidPassword(): string | boolean {
+    const control = this.signUpForm.get('password');
+    const isInvalid = control?.invalid && control.touched;
 
-		if (isInvalid) {
-			if (control.hasError('required')) {
-				return 'This field is required';
-			} else if (control.hasError('minlength')) {
-				return 'Password must be at least 8 characters long';
-			} else {
-				return 'Enter a valid password';
-			}
-		}
+    if (isInvalid) {
+      if (control.hasError('required')) {
+        return 'This field is required';
+      } else if (control.hasError('minlength')) {
+        return 'Password must be at least 8 characters long';
+      } else {
+        return 'Enter a valid password';
+      }
+    }
 
-		return false;
-	}
+    return false;
+  }
 
-	onSignUp() {
-		if (this.signUpForm.invalid) return;
-		const {displayName, email, password} = this.signUpForm.value;
+  onSignUp() {
+    if (this.signUpForm.invalid) return;
+    const {displayName, email, password} = this.signUpForm.value;
 
-		this.loading.set(true);
+    this.loading.set(true);
 
-		this.authService
-				.signupWithDisplayName(<string>email, <string>password, <string>displayName)
-				.then(() => {
-					this.loading.set(false);
-					this.toastService.showInfo('Information', 'Sign-up successful! Please check your email to verify your account.');
-				})
-				.catch((error) => {
-					this.loading.set(false);
-					this.toastService.showError('Error', error.message);
-				});
-	}
+    this.authService
+      .signupWithDisplayName(<string>email, <string>password, <string>displayName)
+      .then(() => {
+        this.loading.set(false);
+        this.toastService.showInfo('Information', 'Sign-up successful! Please check your email to verify your account.');
+      })
+      .catch((error) => {
+        this.loading.set(false);
+        this.toastService.showError('Error', error.message);
+      });
+  }
 
-	onSignIn() {
-		this.router.navigateByUrl('/auth/login').then();
-	}
+  onSignIn() {
+    this.router.navigateByUrl('/auth/login').then();
+  }
 
-	googleSignIn() {
-		this.authService.googleSignIn().then(
-				() => {
-					this.router.navigateByUrl('/home');
-				}
-		).catch((error) => {
-			console.error(error);
-		});
-	}
+  googleSignIn() {
+    this.authService.googleSignIn().then(
+      () => {
+        this.router.navigateByUrl('/home');
+      }
+    ).catch((error) => {
+      console.error(error);
+    });
+  }
 }

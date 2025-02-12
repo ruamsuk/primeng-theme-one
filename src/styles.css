@@ -7,10 +7,52 @@
 @import "tailwindcss";
 
 @theme {
-  --font-saraban: Sarabun, sans-serrif;
-  --font-thasadith: Thasadith, sans-serrif;
+  --font-saraban: Sarabun, sans-serif;
+  --font-thasadith: Thasadith, sans-serif;
 }
 
 html {
   font-family: Sarabun, "Leelawadee UI", sans-serif;
+}
+
+.center {
+  @apply flex justify-center items-center;
+}
+
+.loading-shade {
+  @apply fixed inset-0 bg-black opacity-15 z-[9999999] flex items-center justify-center;
+}
+
+.btn-disabled {
+  @apply bg-indigo-400 text-white cursor-not-allowed;
+}
+
+.btn-enabled {
+  @apply bg-indigo-600 text-white cursor-pointer;
+
+  /* Mouse hover effect */
+
+  &:hover {
+    @apply bg-indigo-700;
+  }
+}
+
+.ng-invalid.ng-dirty {
+  color: #e93434;
+}
+
+.p-error {
+  color: #e93434;
+}
+
+.table-container {
+  @apply overflow-x-auto overflow-y-hidden w-[650px] mx-auto max-w-full md:mx-auto;
+}
+
+th {
+  @apply text-teal-400 text-sm md:text-lg opacity-25
+}
+
+.icons {
+  @apply absolute right-2 top-1.5 transform translate-y-[50%] cursor-pointer;
 }

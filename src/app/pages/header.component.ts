@@ -1,10 +1,10 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { MenuItem } from 'primeng/api';
-import { NgClass } from '@angular/common';
+import { NgClass, NgOptimizedImage } from '@angular/common';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { UserProfileComponent } from '../auth/user-profile.component';
 import { SharedModule } from '../shared/shared.module';
 
@@ -13,11 +13,23 @@ import { SharedModule } from '../shared/shared.module';
   imports: [
     SharedModule,
     NgClass,
+    RouterLink,
+    NgOptimizedImage,
   ],
   template: `
     <p-menubar [model]="items">
       <ng-template #start>
-        <img src="/images/primeng.png" alt="logo">
+        <img ngSrc="/images/primeng.png" priority alt="logo" height="51" width="48">
+      </ng-template>
+      <ng-template #start let-item let-root="root">
+        @if (item.route) {
+          <ng-container>
+            <a [routerLink]="item.route" class="p-menubar-item-link">
+              <span [class]="item.icon"></span>
+              <span class="ml-2">{{ item.label }}</span>
+            </a>
+          </ng-container>
+        }
       </ng-template>
       <ng-template #end>
         <span pTooltip="{{tooltipMsg()}}" class="cursor-pointer pi"
@@ -66,7 +78,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
           {
             label: 'รายการบัญชี',
             icon: 'pi pi-list',
-            route: '/account/account-list',
+            command: () => this.router.navigateByUrl('/account'),
           },
           {
             label: 'ตามช่วงเวลา',
@@ -128,7 +140,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         ],
       },
       {
-        label: 'Monthly',
+        label: 'กำหนดเดือน',
         icon: 'pi pi-calendar',
         items: [
           {
@@ -139,11 +151,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
         ],
       },
       {
-        label: 'Manage users',
+        label: 'จัดการผู้ใช้',
         icon: 'pi pi-users',
         items: [
           {
-            label: 'Users list',
+            label: 'รายชื่อผู้ใช้',
             icon: 'pi pi-users',
             route: '/manage-user',
           },
