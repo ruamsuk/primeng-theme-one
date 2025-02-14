@@ -1,10 +1,4 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  HostListener,
-  inject,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, inject, OnDestroy, OnInit, } from '@angular/core';
 import { ConfirmationService } from 'primeng/api';
 import { AccountService } from '../services/account.service';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -32,7 +26,7 @@ import { CurrencyPipe, NgClass } from '@angular/common';
         </div>
       }
 
-      <div class="card">
+      <div class="p-card">
         <p-table
           #dt
           [value]="accounts"
@@ -54,7 +48,7 @@ import { CurrencyPipe, NgClass } from '@angular/common';
                 />
               </span>
               <span
-                class="hidden md:block tasadith text-green-400 text-3xl ml-auto"
+                class="hidden md:block font-thasadith text-sky-400 text-2xl font-semibold ml-auto"
               >
                 รายการค่าใช้จ่าย
               </span>
@@ -80,7 +74,7 @@ import { CurrencyPipe, NgClass } from '@angular/common';
               </p-iconField>
             </div>
           </ng-template>
-          <ng-template pTemplate="header">
+          <ng-template #header>
             <tr>
               <th style="width: 80px; margin-left: 5px;">#</th>
               <th style="min-width: 150px">
@@ -89,10 +83,10 @@ import { CurrencyPipe, NgClass } from '@angular/common';
               <th style="min-width: 150px">
                 <div class="flex align-items-center">รายการ</div>
               </th>
-              <th [ngClass]="{ 'hide-on-mobile': isMobile }">
+              <th style="min-width: 120px" [ngClass]="{ 'hide-on-mobile': isMobile }">
                 <div class="flex align-items-center">จำนวนเงิน</div>
               </th>
-              <th [ngClass]="{ 'hide-on-mobile': isMobile }">
+              <th style="min-width: 140px" [ngClass]="{ 'hide-on-mobile': isMobile }">
                 <div class="flex align-items-center">หมายเหตุ</div>
               </th>
               <th style="min-width: 120px">
@@ -101,9 +95,11 @@ import { CurrencyPipe, NgClass } from '@angular/common';
               <th style="min-width: 100px">*</th>
             </tr>
           </ng-template>
-          <ng-template pTemplate="body" let-account let-i="rowIndex">
+          <ng-template #body let-account let-i="rowIndex">
             <tr [ngClass]="{ 'row-income': account.isInCome }">
-              <td>{{ currentPage * rowsPerPage + i + 1 }}</td>
+              <td [ngClass]="{ isIncome: account.isInCome }">
+                {{ currentPage * rowsPerPage + i + 1 }}
+              </td>
               <td [ngClass]="{ isIncome: account.isInCome }">
                 {{ account.date | thaiDate }}
               </td>
@@ -164,17 +160,19 @@ import { CurrencyPipe, NgClass } from '@angular/common';
   `,
   styles: ``,
 })
-export class AccountListComponent implements OnInit {
+export class AccountListComponent implements OnInit, OnDestroy {
   accountService = inject(AccountService);
   authService = inject(AuthService);
   confirmService = inject(ConfirmationService);
   dialogService = inject(DialogService);
   message = inject(ToastService);
+  cd = inject(ChangeDetectorRef);
 
   currentPage = 0;
   rowsPerPage = 10;
 
   admin: boolean = false;
+  isMember: boolean = false;
   isMobile: boolean = false;
   loading = false;
   accounts!: Account[];
@@ -183,8 +181,10 @@ export class AccountListComponent implements OnInit {
   searchValue = new FormControl('');
 
   constructor(private cdr: ChangeDetectorRef) {
+    this.chkRole();
     this.getRole();
     this.getAccounts();
+    this.cd.markForCheck();
   }
 
   @HostListener('window:resize', ['$event'])
@@ -199,6 +199,13 @@ export class AccountListComponent implements OnInit {
   getRole() {
     this.authService.isAdmin().then((isAdmin) => {
       this.admin = isAdmin;
+    });
+  }
+
+  chkRole() {
+    this.authService.userProfile$.pipe().subscribe((user: any) => {
+      this.admin = user?.role === 'admin' || user?.role === 'manager';
+      this.isMember = user?.role === 'member';
     });
   }
 
@@ -238,7 +245,14 @@ export class AccountListComponent implements OnInit {
       target: event.target as EventTarget,
       message: 'ต้องการลบรายการนี้?',
       icon: 'pi pi-info-circle',
-      acceptButtonStyleClass: 'p-button-warning p-button-sm',
+      rejectButtonProps: {
+        label: 'Cancel',
+        severity: 'secondary',
+        outlined: true
+      },
+      acceptButtonProps: {
+        label: 'Okay'
+      },
       accept: () => {
         this.accountService.deleteAccount(id).subscribe({
           next: () =>
@@ -268,26 +282,32 @@ export class AccountListComponent implements OnInit {
       data: account,
       header: header,
       width: '360px',
-      contentStyle: { overflow: 'auto' },
+      modal: true,
+      contentStyle: {overflow: 'auto'},
       breakpoints: {
         '960px': '360px',
         '640px': '360px',
-        '390px': '360px',
       },
+      closable: true,
     });
   }
 
   onDetail(account: any) {
-    this.dialogService.open(AccountDetailComponent, {
+    this.ref = this.dialogService.open(AccountDetailComponent, {
       data: account,
       header: 'รายละเอียดบัญชี',
       width: '360px',
-      contentStyle: { overflow: 'auto' },
+      contentStyle: {overflow: 'auto'},
       breakpoints: {
         '960px': '360px',
         '640px': '360px',
         '390px': '360px',
       },
+      closable: true,
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.ref) this.ref.close();
   }
 }

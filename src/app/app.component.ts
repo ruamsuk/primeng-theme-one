@@ -7,11 +7,10 @@ import { Toast } from 'primeng/toast';
 import { Auth, onAuthStateChanged } from '@angular/fire/auth';
 import { TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FooterComponent } from './pages/footer.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, HeaderComponent, Toast, FooterComponent],
+  imports: [RouterOutlet, HeaderComponent, Toast],
   template: `
     <p-toast/>
     @if (currentUser() && emailVerify()) {
@@ -20,11 +19,23 @@ import { FooterComponent } from './pages/footer.component';
     <div class="p-1">
       <router-outlet/>
     </div>
-    @if (currentUser() && emailVerify()) {
-      <app-footer/>
+  `,
+  styles: `
+    :host ::ng-deep .p-toast-message {
+      font-family: 'Sarabun', sans-serif;
+      font-size: 1.5rem;
+      font-style: italic;
+    }
+
+    :host ::ng-deep .p-toast-detail {
+      font-style: italic;
+      font-size: 1.125rem;
+    }
+
+    :host ::ng-deep .p-toast-summary {
+      font-size: 1.125rem !important;
     }
   `,
-  styles: [],
 })
 export class AppComponent implements OnInit {
   private readonly authService: AuthService = inject(AuthService);
@@ -33,7 +44,6 @@ export class AppComponent implements OnInit {
   private readonly translate: TranslateService = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
   emailVerify = signal(false);
-
   currentUser = this.authService.currentUser;
 
   @HostListener('window:mousemove')

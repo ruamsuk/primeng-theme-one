@@ -32,8 +32,28 @@ export const routes: Routes = [
   {
     path: 'account',
     ...canActivate(redirectUnauthorizedToLogin),
-    loadComponent: () => import('./accounts/account-list.component')
-      .then(m => m.AccountListComponent),
+    children: [
+      {
+        path: 'account-list',
+        loadComponent: () => import('./accounts/account-list.component')
+          .then(m => m.AccountListComponent),
+      },
+      {
+        path: 'account-between',
+        loadComponent: () => import('./accounts/account-between.component')
+          .then(m => m.AccountBetweenComponent),
+      },
+      {
+        path: 'between-detail',
+        loadComponent: () => import('./accounts/account-between-detail.component')
+          .then(m => m.AccountBetweenDetailComponent),
+      },
+      {
+        path: 'allyear',
+        loadComponent: () => import('./accounts/calculate-expenses-income.component')
+          .then(m => m.CalculateExpensesIncomeComponent),
+      },
+    ]
   },
   {
     path: 'user',

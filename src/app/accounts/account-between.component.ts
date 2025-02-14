@@ -11,11 +11,12 @@ import { AccountsComponent } from './accounts.component';
 import { ThaiDatePipe } from '../pipe/thai-date.pipe';
 import { CurrencyPipe, NgClass } from '@angular/common';
 import { ToastService } from '../services/toast.service';
+import { DatePicker } from 'primeng/datepicker';
 
 @Component({
   selector: 'app-account-between',
   standalone: true,
-  imports: [SharedModule, ThaiDatePipe, NgClass, CurrencyPipe],
+  imports: [SharedModule, ThaiDatePipe, NgClass, CurrencyPipe, DatePicker],
   template: `
     @if (loading) {
       <div class="loading-shade">
@@ -23,43 +24,43 @@ import { ToastService } from '../services/toast.service';
       </div>
     }
     <div class="card flex flex-wrap p-fluid">
-      <p-card class="w-20rem xl:w-20rem mt-2 mx-auto">
-        <div class="text-center tasadith text-base -mt-3 mb-2 md:text-2xl">
-          <span>ตามช่วงเวลา</span>
+      <p-card class="w-1/3 md:2/5 mt-2 mx-auto">
+        <div class="text-center font-thasadith text-base font-semibold -mt-3 mb-2 md:text-2xl ">
+          <span class="text-green-500">ตามช่วงเวลา</span>
         </div>
-        <div class="flex-auto px-3">
-<!--          <p-calendar
-                  [iconDisplay]="'input'"
-                  [showIcon]="true"
-                  [formControl]="selectedDates"
-                  selectionMode="range"
-                  inputId="icondisplay"
-                  name="date"
-                  appendTo="body"
-                  placeholder="วันเริ่มต้น - วันสิ้นสุด"
-                  (onSelect)="onSelect()"
-                  [readonlyInput]="true"
-                  dateFormat="d M yy"
-          ></p-calendar>-->
+        <div class="text-center px-2 mx-auto">
+          <p-datePicker
+            [iconDisplay]="'input'"
+            [showIcon]="true"
+            [formControl]="selectedDates"
+            selectionMode="range"
+            inputId="icondisplay"
+            name="date"
+            appendTo="body"
+            placeholder="วันเริ่มต้น - วันสิ้นสุด"
+            (onSelect)="onSelect()"
+            [readonlyInput]="true" styleClass="w-3/4"
+          ></p-datePicker>
         </div>
       </p-card>
     </div>
     @if (accountExp) {
-      <div class="flex justify-content-around align-items-center mt-3">
+      <div class="flex justify-around items-center mt-3">
         <p-table
-                [value]="accountExp"
-                [rowHover]="true"
-                [tableStyle]="{ 'min-width': '50rem' }"
-                [scrollable]="true"
-                scrollHeight="300px"
-                styleClass="p-datatable-striped"
+          [value]="accountExp"
+          [rowHover]="true"
+          [tableStyle]="{ 'min-width': '50rem' }"
+          [scrollable]="true"
+          scrollHeight="300px"
+          styleClass="p-datatable-striped"
         >
           <ng-template pTemplate="caption">
-            <div class="flex justify-content-between tasadith md:text-xl">
-              <span class="text-yellow-300">
+            <div class="flex justify-between font-thasadith md:text-xl font-bold">
+              <span class="text-red-500">
                 รายจ่าย
               </span>
-              <span [ngClass]="{'text-red-300': calculateBalance() < 0, 'text-green-300': calculateBalance() >= 0}" class="hidden md:block text-xl">
+              <span [ngClass]="{'text-red-500': calculateBalance() < 0, 'text-green-400': calculateBalance() >= 0}"
+                    class="hidden md:block text-xl">
                คงเหลือ: {{ calculateBalance() | currency: '' : '' }} บาท</span
               >
               <p-button icon="pi pi-refresh" (click)="resetForm()"/>
@@ -85,17 +86,17 @@ import { ToastService } from '../services/toast.service';
               <td>
                 @if (admin) {
                   <i
-                          pTooltip="แก้ไข"
-                          (click)="showDialog(account)"
-                          tooltipPosition="bottom"
-                          class="pi pi-pen-to-square mx-2 text-orange-600"
+                    pTooltip="แก้ไข"
+                    (click)="showDialog(account)"
+                    tooltipPosition="bottom"
+                    class="pi pi-pen-to-square mx-2 text-orange-600"
                   ></i>
                   <p-confirmPopup/>
                   <i
-                          pTooltip="ลบข้อมูล"
-                          (click)="conf_($event, account.id)"
-                          tooltipPosition="bottom"
-                          class="pi pi-trash text-red-500"
+                    pTooltip="ลบข้อมูล"
+                    (click)="conf_($event, account.id)"
+                    tooltipPosition="bottom"
+                    class="pi pi-trash text-red-500"
                   ></i>
                 }
               </td>
@@ -104,8 +105,8 @@ import { ToastService } from '../services/toast.service';
           <ng-template pTemplate="emptymessage">
             <tr>
               <td
-                      colspan="6"
-                      class="text-center text-orange-400 text-xl sm:text-base font-bold sarabun"
+                colspan="6"
+                class="text-center text-orange-400 text-xl sm:text-base font-bold font-saraban"
               >
                 ไม่พบข้อมูลรายจ่าย
               </td>
@@ -113,7 +114,7 @@ import { ToastService } from '../services/toast.service';
           </ng-template>
           <ng-template pTemplate="summary">
             <div
-                    class="flex align-items-center justify-content-around tasadith font-bold text-xl sm:text-base"
+              class="flex items-center justify-around font-thasadith font-bold text-2xl sm:text-base"
             >
               <span>
                 รวม:
@@ -135,18 +136,18 @@ import { ToastService } from '../services/toast.service';
       </div>
     }
     @if (accountIncome) {
-      <div class="flex justify-content-around align-items-center mt-3">
+      <div class="flex justify-around items-center mt-3">
         <p-table
-                [value]="accountIncome"
-                [rowHover]="true"
-                [tableStyle]="{ 'min-width': '50rem' }"
-                [scrollable]="true"
-                scrollHeight="300px"
-                styleClass="p-datatable-striped"
+          [value]="accountIncome"
+          [rowHover]="true"
+          [tableStyle]="{ 'min-width': '50rem' }"
+          [scrollable]="true"
+          scrollHeight="300px"
+          styleClass="p-datatable-striped"
         >
           <ng-template pTemplate="caption">
-            <div class="flex align-items-center justify-content-between">
-              <span class="text-green-400 font-bold tasadith md:text-xl"
+            <div class="flex items-center justify-between">
+              <span class="text-green-400 font-bold font-tasadith md:text-xl"
               >รายรับ</span
               >
               <p-button icon="pi pi-refresh"/>
@@ -172,17 +173,17 @@ import { ToastService } from '../services/toast.service';
               <td>
                 @if (admin) {
                   <i
-                          pTooltip="แก้ไข"
-                          (click)="showDialog(accountIn)"
-                          tooltipPosition="bottom"
-                          class="pi pi-pen-to-square mr-2 ml-2 text-orange-600"
+                    pTooltip="แก้ไข"
+                    (click)="showDialog(accountIn)"
+                    tooltipPosition="bottom"
+                    class="pi pi-pen-to-square mr-2 ml-2 text-orange-600"
                   ></i>
                   <p-confirmPopup/>
                   <i
-                          pTooltip="ลบข้อมูล"
-                          (click)="conf_($event, accountIn.id)"
-                          tooltipPosition="bottom"
-                          class="pi pi-trash text-red-500"
+                    pTooltip="ลบข้อมูล"
+                    (click)="conf_($event, accountIn.id)"
+                    tooltipPosition="bottom"
+                    class="pi pi-trash text-red-500"
                   ></i>
                 }
               </td>
@@ -190,9 +191,8 @@ import { ToastService } from '../services/toast.service';
           </ng-template>
           <ng-template pTemplate="emptymessage">
             <tr>
-              <td
-                      colspan="6"
-                      class="text-center text-orange-400 text-xl font-bold sarabun"
+              <td colspan="6"
+                  class="center text-orange-400 text-xl font-bold font-sarabun"
               >
                 ไม่พบข้อมูลรายรับ
               </td>
@@ -200,7 +200,7 @@ import { ToastService } from '../services/toast.service';
           </ng-template>
           <ng-template pTemplate="summary">
             <div
-                    class="flex align-items-center justify-content-around tasadith font-bold text-xl"
+              class="flex items-center justify-around font-thasadith font-bold text-xl"
             >
               <span>
                 รวม:
@@ -221,7 +221,7 @@ import { ToastService } from '../services/toast.service';
         </p-table>
       </div>
     }
-	`,
+  `,
   styles: ``,
 })
 export class AccountBetweenComponent {
@@ -300,6 +300,7 @@ export class AccountBetweenComponent {
           );
         },
         error: (error: any) => {
+          console.log(error.message);
           this.message.showError('Error', error.message);
           this.loading = false;
         },

@@ -171,33 +171,44 @@ export class AuthService {
   async isAuth(): Promise<boolean> {
     const user = this.fireAuth.currentUser;
     if (user) {
-      const role = await this.getUserRole(user.uid);
+      const role = await this.getUserRole();
       return role === 'admin' || role === 'manager';
     } else {
       return false;
     }
   }
 
-  async isAdmin(): Promise<boolean> {
-    let idTokenResult = await this.getIdTokenResult();
-    if (idTokenResult) {
-      return (
-        idTokenResult.claims['role'] === 'admin' ||
-        idTokenResult.claims['role'] === 'manager'
-      );
-    } else {
-      return false;
-    }
-  }
+  // async isAdmin(): Promise<boolean> {
+  //   let idTokenResult = await this.getIdTokenResult();
+  //   if (idTokenResult) {
+  //     return (
+  //       idTokenResult.claims['role'] === 'admin' ||
+  //       idTokenResult.claims['role'] === 'manager'
+  //     );
+  //   } else {
+  //     return false;
+  //   }
+  // }
 
   getIdTokenResult(): Promise<IdTokenResult> | any {
     return this.fireAuth.currentUser?.getIdTokenResult();
   }
 
   /** Get From Firestore */
-  async getUserRole(uid: string): Promise<string | null> {
-    const userProfile = await this.getUserProfile(uid);
-    return userProfile ? userProfile['role'] : null;
+  async getUserRole(): Promise<string | null> {
+    // const userProfile = await this.getUserProfile(uid);
+    // return userProfile ? userProfile['role'] : null;
+    const user = this.fireAuth.currentUser;
+    if (user) {
+      const idTokenResult: IdTokenResult = await user.getIdTokenResult();
+      return idTokenResult.claims['role'] as string || null;
+    }
+    return null;
+  }
+
+  async isAdmin(): Promise<boolean> {
+    const role = await this.getUserRole();
+    return role === 'admin';
   }
 
   /** Get from firestore */

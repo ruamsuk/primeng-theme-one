@@ -15,6 +15,7 @@ import { ToastService } from '../services/toast.service';
   imports: [
     SharedModule,
     AsyncPipe,
+
   ],
   template: `
     <hr class="h-px bg-gray-200 border-0"/>
@@ -111,7 +112,28 @@ import { ToastService } from '../services/toast.service';
     }
 
   `,
-  styles: ` `
+  styles: `
+    .profile-image > img {
+      border-radius: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .profile-image {
+      position: relative;
+    }
+
+    .profile-image > #in {
+      position: absolute;
+      bottom: 5px;
+      left: 80%;
+    }
+
+    label {
+      color: gray;
+      margin-left: 5px;
+    }
+  `
 })
 export class UserProfileComponent {
   authService: AuthService = inject(AuthService);

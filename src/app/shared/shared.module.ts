@@ -1,30 +1,33 @@
 import { NgModule } from '@angular/core';
-import { Avatar, AvatarModule } from 'primeng/avatar';
-import { Toolbar, ToolbarModule } from 'primeng/toolbar';
-import { Button, ButtonDirective, ButtonModule } from 'primeng/button';
-import { InputText, InputTextModule } from 'primeng/inputtext';
-import { Password, PasswordModule } from 'primeng/password';
-import { Card, CardModule } from 'primeng/card';
+import { AvatarModule } from 'primeng/avatar';
+import { ToolbarModule } from 'primeng/toolbar';
+import { ButtonDirective, ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
+import { CardModule } from 'primeng/card';
 import { PrimeTemplate } from 'primeng/api';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Toast, ToastModule } from 'primeng/toast';
-import { TieredMenu, TieredMenuModule } from 'primeng/tieredmenu';
-import { Menubar, MenubarModule } from 'primeng/menubar';
-import { Menu, MenuModule } from 'primeng/menu';
-import { Ripple, RippleModule } from 'primeng/ripple';
-import { Table, TableModule } from 'primeng/table';
-import { IconField, IconFieldModule } from 'primeng/iconfield';
+import { ToastModule } from 'primeng/toast';
+import { TieredMenuModule } from 'primeng/tieredmenu';
+import { MenubarModule } from 'primeng/menubar';
+import { MenuModule } from 'primeng/menu';
+import { RippleModule } from 'primeng/ripple';
+import { TableModule } from 'primeng/table';
+import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
-import { Textarea, TextareaModule } from 'primeng/textarea';
-import { ProgressSpinner, ProgressSpinnerModule } from 'primeng/progressspinner';
-import { Tooltip, TooltipModule } from 'primeng/tooltip';
+import { TextareaModule } from 'primeng/textarea';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { TooltipModule } from 'primeng/tooltip';
+import { InputSwitchModule } from 'primeng/inputswitch';
+import { DatePickerModule } from 'primeng/datepicker';
 
 @NgModule({
   imports: [
     AvatarModule,
     ButtonModule,
     CardModule,
+    DatePickerModule,
     TableModule,
     ToolbarModule,
     ToastModule,
@@ -45,6 +48,7 @@ import { Tooltip, TooltipModule } from 'primeng/tooltip';
     IconFieldModule,
     TooltipModule,
     TableModule,
+    InputSwitchModule,
   ],
   exports: [
     AvatarModule,
@@ -70,7 +74,9 @@ import { Tooltip, TooltipModule } from 'primeng/tooltip';
     IconFieldModule,
     TooltipModule,
     TableModule,
+    InputSwitchModule,
   ],
-  providers: [  ]
+  providers: []
 })
-export class SharedModule {}
+export class SharedModule {
+}

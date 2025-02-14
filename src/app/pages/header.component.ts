@@ -1,4 +1,13 @@
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal
+} from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { NgClass, NgOptimizedImage } from '@angular/common';
 import { AuthService } from '../services/auth.service';
@@ -15,6 +24,7 @@ import { SharedModule } from '../shared/shared.module';
     NgClass,
     RouterLink,
     NgOptimizedImage,
+
   ],
   template: `
     <p-menubar [model]="items">
@@ -32,27 +42,101 @@ import { SharedModule } from '../shared/shared.module';
         }
       </ng-template>
       <ng-template #end>
-        <span pTooltip="{{tooltipMsg()}}" class="cursor-pointer pi"
-              [ngClass]="{'pi-moon': !isDarkMode(), 'pi-sun': isDarkMode() }"
-              (click)="toggleDarkMode()"></span>
+        <div class="flex items-center">
+          <p-avatar
+            image="{{ currentUser()?.photoURL }}"
+            shape="circle"
+            class="mr-2"
+          />
+          <span
+            (click)="menu.toggle($event)"
+            class="font-bold text-gray-400 mr-2 cursor-pointer -mt-1"
+          >
+              {{
+              authService.currentUser()?.displayName
+                ? authService.currentUser()?.displayName
+                : authService.currentUser()?.email
+            }}
+            <i class="pi pi-angle-down"></i>
+            </span>
+          <p-tieredMenu #menu [model]="subitems" [popup]="true"/>
+          <span pTooltip="{{tooltipMsg()}}" class="cursor-pointer pi ml-2"
+                [ngClass]="{'pi-moon': !isDarkMode(), 'pi-sun': isDarkMode() }"
+                (click)="toggleDarkMode()">
+          </span>
+        </div>
+
       </ng-template>
     </p-menubar>
+    <footer
+      [class]="isFixedFooter ? 'fixed bottom-0 left-0 w-full bg-gray-800 text-white text-center py-3 transition-all duration-300' : 'w-full bg-gray-800 text-white text-center py-3 transition-all duration-300'">
+      <div class="flex items-center justify-center space-x-2">
+        <p class="hidden md:block text-sm md:text-lg text-gray-400 dark:text-gray-400">
+          Copyright &copy; {{ _year }} Ruamsuk&trade; Kanchanaburi.
+        </p>
+        <i class="pi pi-sparkles opacity-50"></i>
+      </div>
+    </footer>
   `,
-  styles: ``
+  styles: `
+    .avatar-image img {
+      width: 120px; /* กำหนดขนาดที่ต้องการ */
+      height: 120px; /* กำหนดขนาดที่ต้องการ */
+      object-fit: cover; /* ปรับขนาดภาพให้พอดี */
+    }
+
+    .p-menubar {
+      position: relative;
+      z-index: 1000; /* ปรับค่า z-index ให้สูงกว่า <th> */
+    }
+
+    .p-menubar .p-menuitem-link {
+      position: relative;
+      z-index: 1001; /* ปรับค่า z-index ให้สูงกว่า <th> */
+    }
+  `
 })
-export class HeaderComponent implements OnInit, OnDestroy {
-  private readonly authService: AuthService = inject(AuthService);
+export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
+  public readonly authService: AuthService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly messageService: ToastService = inject(ToastService);
   public dialogService: DialogService = inject(DialogService);
+  private cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
 
+  isFixedFooter = true;
+  _year = new Date().getFullYear();
   items: MenuItem[] | undefined;
   subitems: MenuItem[] | undefined;
   ref: DynamicDialogRef | undefined;
   currentUser = this.authService.currentUser;
 
   isDarkMode = signal(false);
-  tooltipMsg = signal('Switch to Dark');
+  tooltipMsg = signal('Switch to Light');
+
+  checkFooterPosition() {
+    if (typeof globalThis.window !== 'undefined') {
+      const bodyHeight = document.body.offsetHeight; // ความสูงของเนื้อหาทั้งหมด
+      const windowHeight = globalThis.window.innerHeight; // ความสูงของ viewport
+
+      // ตรวจสอบว่าเนื้อหามีความสูงน้อยกว่า viewport หรือไม่
+      this.isFixedFooter = bodyHeight <= windowHeight;
+
+      // บังคับ Angular ให้ตรวจจับการเปลี่ยนแปลง
+      this.cdr.detectChanges();
+    }
+  }
+
+  ngAfterViewInit() {
+    // ใช้ setTimeout เพื่อบังคับให้ตรวจสอบตำแหน่ง footer อีกครั้งหลังจากโหลด DOM เสร็จสิ้น
+    setTimeout(() => {
+      this.checkFooterPosition();
+    }, 0);
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.checkFooterPosition(); // ตรวจสอบตำแหน่ง footer เมื่อขนาดหน้าจอเปลี่ยนแปลง
+  }
 
   toggleDarkMode() {
     this.isDarkMode.update((current) => !current);
@@ -65,6 +149,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.checkFooterPosition();
+    this.toggleDarkMode();
     this.items = [
       {
         label: 'Home',
@@ -78,22 +164,22 @@ export class HeaderComponent implements OnInit, OnDestroy {
           {
             label: 'รายการบัญชี',
             icon: 'pi pi-list',
-            command: () => this.router.navigateByUrl('/account'),
+            command: () => this.router.navigateByUrl('/account/account-list'),
           },
           {
             label: 'ตามช่วงเวลา',
             icon: 'pi pi-calendar-clock',
-            route: '/account/between',
+            command: () => this.router.navigateByUrl('/account/account-between'),
           },
           {
             label: 'ช่วงเวลาและรายการ',
             icon: 'pi pi-calendar-plus',
-            route: '/account/between-detail',
+            command: () => this.router.navigateByUrl('/account/between-detail'),
           },
           {
             label: 'ตลอดทั้งปี',
             icon: 'pi pi-book',
-            route: '/account/allyear',
+            command: () => this.router.navigateByUrl('/account/allyear'),
           },
         ],
       },
