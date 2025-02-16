@@ -1,4 +1,13 @@
-import { Component, DestroyRef, HostListener, inject, OnInit, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  HostListener,
+  inject,
+  OnInit,
+  signal
+} from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './pages/header.component';
 import { AuthService } from './services/auth.service';
@@ -7,10 +16,11 @@ import { Toast } from 'primeng/toast';
 import { Auth, onAuthStateChanged } from '@angular/fire/auth';
 import { TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FooterComponent } from './pages/footer.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, HeaderComponent, Toast],
+  imports: [RouterOutlet, HeaderComponent, Toast, FooterComponent],
   template: `
     <p-toast/>
     @if (currentUser() && emailVerify()) {
@@ -19,6 +29,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     <div class="p-1">
       <router-outlet/>
     </div>
+    @if (currentUser() && emailVerify()) {
+      <app-footer/>
+    }
   `,
   styles: `
     :host ::ng-deep .p-toast-message {
@@ -37,12 +50,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     }
   `,
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements AfterViewInit, OnInit {
   private readonly authService: AuthService = inject(AuthService);
   private readonly primeConfig: PrimeNG = inject(PrimeNG);
   private readonly isAuth: Auth = inject(Auth);
   private readonly translate: TranslateService = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
+
   emailVerify = signal(false);
   currentUser = this.authService.currentUser;
 
@@ -50,6 +65,11 @@ export class AppComponent implements OnInit {
   @HostListener('window:keydown')
   resetTimer() {
     this.authService.resetTimer();
+  }
+
+  ngAfterViewInit() {
+    // บังคับ Angular ให้ตรวจจับการเปลี่ยนแปลงของ DOM
+    this.cdr.detectChanges();
   }
 
   ngOnInit(): void {

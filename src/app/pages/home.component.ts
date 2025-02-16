@@ -1,47 +1,68 @@
-import { Component } from '@angular/core';
-import { Card } from 'primeng/card';
-import { Button } from 'primeng/button';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { Image } from '../models/images.model';
+import { ImagesSelectorService } from '../services/images-selector.service';
+import { SharedModule } from '../shared/shared.module';
 
 @Component({
   selector: 'app-home',
-  imports: [
-    Card,
-    Button
-  ],
+  imports: [SharedModule],
   template: `
-    <div class="flex justify-center items-center mx-auto w-[70%]">
-      <p-card [style]="{ width: '25rem', overflow: 'hidden' }" class="mt-5 shadow-md">
-        <ng-template #header>
-          <img alt="Card" class="w-full" src="https://primefaces.org/cdn/primeng/images/card-ng.jpg"/>
-        </ng-template>
-        <ng-template #title> Advanced Card</ng-template>
-        <ng-template #subtitle> Card subtitle</ng-template>
-        <p class="text-left md:text-justify">
-          เอ็นเตอร์เทนเด้อตุ๋ย หน่อมแน้มช็อคตุ๊กตุ๊กจอหงวนโปรเจกเตอร์ จ๊าบสต๊อกยาวีทับซ้อนโฟม วีนพีเรียดสโตร์
-          แรลลีโดมิโน
-          สะบึมส์แบรนด์ <span class="font-bold text-red-400">กีวีคอนโดมิเนียม</span> แฟร์แฮปปี้กรรมาชนบร็อกโคลีแซมบ้า
-          ไฟลต์โชห่วย
-          ทัวร์ง่าวอัลไซเมอร์
-          จูเนียร์แคนูมาร์กแมคเคอเรล พรีเซ็นเตอร์เคอร์ฟิวออสซี่ดราม่าวอล์ก โบ้ยซีรีส์ล็อบบี้คอนเฟิร์มไลน์
-          โปรเจ็คท์โคโยตี้โยเกิร์ตแอพพริคอท ใช้งาน คาแรคเตอร์
-        </p>
-        <ng-template #footer>
-          <div class="flex gap-4 mt-1">
-            <p-button label="Cancel" severity="secondary" class="w-full" [outlined]="true" styleClass="w-full"/>
-            <p-button label="Save" class="w-full" styleClass="w-full"/>
+    <div class="container mx-auto p-4 my-5">
+      <!-- Grid Layout -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Repeat for each image -->
+        @for (item of images; track $index) {
+          <div class="rounded-lg overflow-hidden shadow-lg bg-gray-800">
+            <p-image [src]="item.src" preview="true" [alt]="item.alt" class="w-full h-auto object-cover"
+                     loading="lazy">
+              <ng-template #indicator>
+                <i class="pi pi-search-plus"></i>
+              </ng-template>
+
+              <!-- Placeholder Effect (Skeleton Loader) -->
+              <ng-template #placeholder>
+                <div class="w-full h-auto bg-gray-700 animate-pulse"></div>
+              </ng-template>
+
+              <!-- Image with Lazy Loading -->
+              <ng-template #image>
+                <img [src]="item.src" [alt]="item.alt" loading="lazy"
+                     class="w-full h-auto object-cover blur-md opacity-0 transition-all duration-700"
+                     (load)="onImageLoad($event)">
+              </ng-template>
+
+              <!-- Preview Image -->
+              <ng-template #preview let-style="style" let-previewCallback="previewCallback">
+                <img [src]="item.src" [alt]="item.alt" [style]="style" loading="lazy" (click)="previewCallback()">
+              </ng-template>
+            </p-image>
+            <div class="p-4">
+              <h3 class="text-lg font-semibold">{{ item.title }}</h3>
+              <p class="text-gray-400">{{ item.description }}</p>
+            </div>
           </div>
-        </ng-template>
-      </p-card>
-    </div>
-    <div class="flex justify-center">
-      <p class="font-thasadith text-xl mt-5">
-        จูเนียร์แคนูมาร์กแมคเคอเรล พรีเซ็นเตอร์เคอร์ฟิวออสซี่ดราม่าวอล์ก โบ้ยซีรีส์ล็อบบี้คอนเฟิร์มไลน์
-        โปรเจ็คท์โคโยตี้โยเกิร์ตแอพพริคอท ใช้งาน คาแรคเตอร์
-      </p>
+        }
+      </div>
     </div>
   `,
   styles: ``
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
+  private readonly imagesService: ImagesSelectorService = inject(ImagesSelectorService);
+  images: Image[] = [];
+  isLoading = signal(true);
 
+  ngOnInit(): void {
+    // Fetch images from the service
+    this.imagesService.getImages().then((data) => {
+      this.images = data;
+      this.isLoading.set(false);
+    });
+  }
+
+  onImageLoad(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.classList.remove('blur-md', 'opacity-0'); // เอา Blur ออก
+    img.classList.add('opacity-100'); // ทำให้ภาพค่อยๆ ชัดขึ้น
+  }
 }

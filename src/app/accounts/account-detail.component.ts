@@ -51,22 +51,22 @@ import { CurrencyPipe } from '@angular/common';
         <th>รับ/จ่าย:</th>
         <td>
           <span
-                  class="{{ account.isInCome ? 'text-green-400' : 'text-red-400' }}"
+            class="{{ account.isInCome ? 'text-green-400' : 'text-red-400' }}"
           >
             {{ account.isInCome ? 'รายรับ' : 'รายจ่าย' }}
           </span>
         </td>
       </tr>
     </table>
-    <div class="flex justify-content-end">
+    <div class="flex justify-end">
       <p-button
-              label="Close"
-              severity="secondary"
-              size="small"
-              (onClick)="closeDialog()"
+        label="Close"
+        severity="secondary"
+        size="small"
+        (onClick)="closeDialog()"
       />
     </div>
-	`,
+  `,
   styles: `
     /** อันนี้ต้องคงไว้ */
     table {

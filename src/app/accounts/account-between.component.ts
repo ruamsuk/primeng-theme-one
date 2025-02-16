@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnDestroy, signal } from '@angular/core';
 import { SharedModule } from '../shared/shared.module';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ConfirmationService } from 'primeng/api';
@@ -18,17 +18,17 @@ import { DatePicker } from 'primeng/datepicker';
   standalone: true,
   imports: [SharedModule, ThaiDatePipe, NgClass, CurrencyPipe, DatePicker],
   template: `
-    @if (loading) {
+    @if (loading()) {
       <div class="loading-shade">
         <p-progressSpinner strokeWidth="4" ariaLabel="loading"/>
       </div>
     }
     <div class="card flex flex-wrap p-fluid">
-      <p-card class="w-1/3 md:2/5 mt-2 mx-auto">
+      <p-card [style]="{ width: '20rem', overflow: 'hidden' }" class="mx-auto">
         <div class="text-center font-thasadith text-base font-semibold -mt-3 mb-2 md:text-2xl ">
           <span class="text-green-500">ตามช่วงเวลา</span>
         </div>
-        <div class="text-center px-2 mx-auto">
+        <div class="text-center mx-auto">
           <p-datePicker
             [iconDisplay]="'input'"
             [showIcon]="true"
@@ -39,7 +39,7 @@ import { DatePicker } from 'primeng/datepicker';
             appendTo="body"
             placeholder="วันเริ่มต้น - วันสิ้นสุด"
             (onSelect)="onSelect()"
-            [readonlyInput]="true" styleClass="w-3/4"
+            [readonlyInput]="true" styleClass="w-full"
           ></p-datePicker>
         </div>
       </p-card>
@@ -54,19 +54,27 @@ import { DatePicker } from 'primeng/datepicker';
           scrollHeight="300px"
           styleClass="p-datatable-striped"
         >
-          <ng-template pTemplate="caption">
+          <ng-template #caption>
             <div class="flex justify-between font-thasadith md:text-xl font-bold">
               <span class="text-red-500">
                 รายจ่าย
               </span>
               <span [ngClass]="{'text-red-500': calculateBalance() < 0, 'text-green-400': calculateBalance() >= 0}"
                     class="hidden md:block text-xl">
-               คงเหลือ: {{ calculateBalance() | currency: '' : '' }} บาท</span
-              >
-              <p-button icon="pi pi-refresh" (click)="resetForm()"/>
+                @if (calculateBalance() < 0) {
+                  เกินงบ:
+                } @else {
+                  คงเหลือ:
+                }
+                <span class="ml-2">
+                  {{ calculateBalance() | currency: '' : '' }} บาท
+                </span>
+                </span
+                >
+              <p-button icon="pi pi-refresh" (click)="resetForm()" pTooltip="Refresh Form"/>
             </div>
           </ng-template>
-          <ng-template pTemplate="header" let-columns>
+          <ng-template #header let-columns>
             <tr>
               <th>#</th>
               <th>วันที่</th>
@@ -76,7 +84,7 @@ import { DatePicker } from 'primeng/datepicker';
               <th>Action</th>
             </tr>
           </ng-template>
-          <ng-template pTemplate="body" let-account let-rowIndex="rowIndex">
+          <ng-template #body let-account let-rowIndex="rowIndex">
             <tr>
               <td>{{ rowIndex + 1 }}</td>
               <td>{{ account.date | thaiDate }}</td>
@@ -84,7 +92,7 @@ import { DatePicker } from 'primeng/datepicker';
               <td>{{ account.amount | currency: '' : '' }}</td>
               <td>{{ account.remark }}</td>
               <td>
-                @if (admin) {
+                @if (admin()) {
                   <i
                     pTooltip="แก้ไข"
                     (click)="showDialog(account)"
@@ -102,19 +110,20 @@ import { DatePicker } from 'primeng/datepicker';
               </td>
             </tr>
           </ng-template>
-          <ng-template pTemplate="emptymessage">
+          <ng-template #emptymessage>
             <tr>
               <td
                 colspan="6"
-                class="text-center text-orange-400 text-xl sm:text-base font-bold font-saraban"
               >
-                ไม่พบข้อมูลรายจ่าย
+                <span class="flex justify-center font-thasadith font-bold text-xl text-orange-500">
+                  ไม่พบข้อมูลรายจ่าย
+                </span>
               </td>
             </tr>
           </ng-template>
-          <ng-template pTemplate="summary">
+          <ng-template #summary>
             <div
-              class="flex items-center justify-around font-thasadith font-bold text-2xl sm:text-base"
+              class="flex items-center justify-around font-thasadith font-bold text-lg/10 bg-gray-900"
             >
               <span>
                 รวม:
@@ -145,15 +154,15 @@ import { DatePicker } from 'primeng/datepicker';
           scrollHeight="300px"
           styleClass="p-datatable-striped"
         >
-          <ng-template pTemplate="caption">
-            <div class="flex items-center justify-between">
-              <span class="text-green-400 font-bold font-tasadith md:text-xl"
+          <ng-template #caption>
+            <div class="flex items-center justify-between font-thasadith font-bold md:text-xl">
+              <span class="text-green-400"
               >รายรับ</span
               >
               <p-button icon="pi pi-refresh"/>
             </div>
           </ng-template>
-          <ng-template pTemplate="header" let-columns>
+          <ng-template #header let-columns>
             <tr>
               <th>#</th>
               <th>วันที่</th>
@@ -163,7 +172,7 @@ import { DatePicker } from 'primeng/datepicker';
               <th>Action</th>
             </tr>
           </ng-template>
-          <ng-template pTemplate="body" let-accountIn let-rowIndex="rowIndex">
+          <ng-template #body let-accountIn let-rowIndex="rowIndex">
             <tr>
               <td>{{ rowIndex + 1 }}</td>
               <td>{{ accountIn.date | thaiDate }}</td>
@@ -171,7 +180,7 @@ import { DatePicker } from 'primeng/datepicker';
               <td>{{ accountIn.amount | currency: '' : '' }}</td>
               <td>{{ accountIn.remark }}</td>
               <td>
-                @if (admin) {
+                @if (admin()) {
                   <i
                     pTooltip="แก้ไข"
                     (click)="showDialog(accountIn)"
@@ -189,18 +198,20 @@ import { DatePicker } from 'primeng/datepicker';
               </td>
             </tr>
           </ng-template>
-          <ng-template pTemplate="emptymessage">
+          <ng-template #emptymessage>
             <tr>
-              <td colspan="6"
-                  class="center text-orange-400 text-xl font-bold font-sarabun"
+              <td
+                colspan="6"
               >
-                ไม่พบข้อมูลรายรับ
+                <span class="flex justify-center font-thasadith font-bold text-xl text-orange-500">
+                  ไม่พบข้อมูลรายจ่าย
+                </span>
               </td>
             </tr>
           </ng-template>
-          <ng-template pTemplate="summary">
+          <ng-template #summary>
             <div
-              class="flex items-center justify-around font-thasadith font-bold text-xl"
+              class="flex items-center justify-around font-thasadith font-bold text-lg/10 bg-gray-900"
             >
               <span>
                 รวม:
@@ -222,9 +233,10 @@ import { DatePicker } from 'primeng/datepicker';
       </div>
     }
   `,
-  styles: ``,
+  styles: `
+  `,
 })
-export class AccountBetweenComponent {
+export class AccountBetweenComponent implements OnDestroy {
   dialogService = inject(DialogService);
   message = inject(ToastService);
   accountService = inject(AccountService);
@@ -232,24 +244,32 @@ export class AccountBetweenComponent {
   confirmService = inject(ConfirmationService);
 
   selectedDates = new FormControl();
-  loading: boolean = false;
   totalIncome: number = 0;
   totalExpenses: number = 0;
   accountIncome!: Account[];
   accountExp!: Account[];
   ref: DynamicDialogRef | undefined;
 
-  admin: boolean = false;
+  loading = signal(false);
+  admin = signal(false);
+  isMember = signal(false);
 
   constructor() {
-    this.checkRole();
+    this.chkRole();
   }
 
-  checkRole() {
-    this.authService.isAdmin().then((isAdmin) => {
-      this.admin = isAdmin;
+  chkRole() {
+    this.authService.userProfile$.pipe().subscribe((user: any) => {
+      this.admin.set(user?.role === 'admin' || user?.role === 'manager');
+      this.isMember.set(user?.role === 'member');
     });
   }
+
+  // checkRole() {
+  //   this.authService.isAdmin().then((isAdmin) => {
+  //     this.admin = isAdmin;
+  //   });
+  // }
 
   /** Selected date range */
   onSelect() {
@@ -274,7 +294,7 @@ export class AccountBetweenComponent {
         return;
       }
 
-      this.loading = true;
+      this.loading.set(true);
 
       /** combine search expenses and incomes */
       combineLatest<any>([
@@ -302,14 +322,14 @@ export class AccountBetweenComponent {
         error: (error: any) => {
           console.log(error.message);
           this.message.showError('Error', error.message);
-          this.loading = false;
+          this.loading.set(false);
         },
         complete: () => {
-          this.loading = false;
+          this.loading.set(false);
         },
       } as any);
 
-      this.loading = false;
+      this.loading.set(false);
     } else {
       console.log('Please select a valid date range.');
     }
@@ -371,5 +391,9 @@ export class AccountBetweenComponent {
     this.accountIncome = [];
     this.totalIncome = 0;
     this.totalExpenses = 0;
+  }
+
+  ngOnDestroy() {
+    if (this.ref) this.ref.close();
   }
 }

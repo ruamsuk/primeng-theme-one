@@ -21,6 +21,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { DatePickerModule } from 'primeng/datepicker';
+import { ImageModule } from 'primeng/image';
 
 @NgModule({
   imports: [
@@ -49,6 +50,7 @@ import { DatePickerModule } from 'primeng/datepicker';
     TooltipModule,
     TableModule,
     InputSwitchModule,
+    ImageModule,
   ],
   exports: [
     AvatarModule,
@@ -75,6 +77,7 @@ import { DatePickerModule } from 'primeng/datepicker';
     TooltipModule,
     TableModule,
     InputSwitchModule,
+    ImageModule,
   ],
   providers: []
 })

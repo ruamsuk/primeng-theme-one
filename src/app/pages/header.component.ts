@@ -24,7 +24,6 @@ import { SharedModule } from '../shared/shared.module';
     NgClass,
     RouterLink,
     NgOptimizedImage,
-
   ],
   template: `
     <p-menubar [model]="items">
@@ -59,24 +58,14 @@ import { SharedModule } from '../shared/shared.module';
             }}
             <i class="pi pi-angle-down"></i>
             </span>
-          <p-tieredMenu #menu [model]="subitems" [popup]="true"/>
+          <p-menu #menu [model]="subitems" [popup]="true"/>
           <span pTooltip="{{tooltipMsg()}}" class="cursor-pointer pi ml-2"
                 [ngClass]="{'pi-moon': !isDarkMode(), 'pi-sun': isDarkMode() }"
                 (click)="toggleDarkMode()">
           </span>
         </div>
-
       </ng-template>
     </p-menubar>
-    <footer
-      [class]="isFixedFooter ? 'fixed bottom-0 left-0 w-full bg-gray-800 text-white text-center py-3 transition-all duration-300' : 'w-full bg-gray-800 text-white text-center py-3 transition-all duration-300'">
-      <div class="flex items-center justify-center space-x-2">
-        <p class="hidden md:block text-sm md:text-lg text-gray-400 dark:text-gray-400">
-          Copyright &copy; {{ _year }} Ruamsuk&trade; Kanchanaburi.
-        </p>
-        <i class="pi pi-sparkles opacity-50"></i>
-      </div>
-    </footer>
   `,
   styles: `
     .avatar-image img {
@@ -154,7 +143,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.items = [
       {
         label: 'Home',
-        route: 'landing',
+        command: () => this.router.navigateByUrl('/'),
         icon: 'pi pi-home',
       },
       {

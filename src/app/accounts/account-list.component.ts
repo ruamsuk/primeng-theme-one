@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, HostListener, inject, OnDestroy, OnInit, } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, inject, OnDestroy, OnInit, signal, } from '@angular/core';
 import { ConfirmationService } from 'primeng/api';
 import { AccountService } from '../services/account.service';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -20,7 +20,7 @@ import { CurrencyPipe, NgClass } from '@angular/common';
   imports: [SharedModule, ThaiDatePipe, CurrencyPipe, NgClass],
   template: `
     <div class="table-container align-items-center justify-content-center mt-3">
-      @if (loading) {
+      @if (loading()) {
         <div class="loading-shade">
           <p-progressSpinner strokeWidth="4" ariaLabel="loading"/>
         </div>
@@ -32,7 +32,7 @@ import { CurrencyPipe, NgClass } from '@angular/common';
           [value]="accounts"
           [rowHover]="true"
           [rows]="10"
-          [loading]="loading"
+          [loading]="loading()"
           [paginator]="true"
           [globalFilterFields]="['details', 'remark']"
           [tableStyle]="{ 'min-width': '40rem' }"
@@ -127,21 +127,21 @@ import { CurrencyPipe, NgClass } from '@angular/common';
                   pTooltip="รายละเอียด"
                   (click)="onDetail(account)"
                   tooltipPosition="bottom"
-                  class="pi pi-list text-blue-600"
+                  class="pi pi-list text-blue-600 cursor-pointer"
                 ></i>
                 @if (admin) {
                   <i
                     pTooltip="แก้ไข"
                     (click)="showDialog(account)"
                     tooltipPosition="bottom"
-                    class="pi pi-pen-to-square mx-3 text-orange-600"
+                    class="pi pi-pen-to-square mx-3 text-yellow-700 cursor-pointer hover:text-yellow-500"
                   ></i>
                   <p-confirmPopup/>
                   <i
                     pTooltip="ลบข้อมูล"
                     (click)="conf($event, account.id)"
                     tooltipPosition="bottom"
-                    class="pi pi-trash text-red-500"
+                    class="pi pi-trash text-red-400 cursor-pointer hover:text-red-600"
                   ></i>
                 }
               </td>
@@ -174,7 +174,7 @@ export class AccountListComponent implements OnInit, OnDestroy {
   admin: boolean = false;
   isMember: boolean = false;
   isMobile: boolean = false;
-  loading = false;
+  loading = signal(false);
   accounts!: Account[];
   account!: Account;
   ref: DynamicDialogRef | undefined;
@@ -210,7 +210,7 @@ export class AccountListComponent implements OnInit, OnDestroy {
   }
 
   getAccounts() {
-    this.loading = true;
+    this.loading.set(true);
 
     this.accountService
       .loadAccounts()
@@ -218,15 +218,15 @@ export class AccountListComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data: Account[]) => {
           this.accounts = data;
-          this.loading = false;
+          this.loading.set(false);
         },
         error: (error: any) => {
           this.message.showError('Error', error.message);
-          this.loading = false;
+          this.loading.set(false);
         },
         complete: () => {
           setTimeout(() => {
-            this.loading = false;
+            this.loading.set(false);
             this.cdr.detectChanges();
           }, 100);
         },
@@ -246,12 +246,13 @@ export class AccountListComponent implements OnInit, OnDestroy {
       message: 'ต้องการลบรายการนี้?',
       icon: 'pi pi-info-circle',
       rejectButtonProps: {
-        label: 'Cancel',
+        label: 'Nope',
         severity: 'secondary',
         outlined: true
       },
       acceptButtonProps: {
-        label: 'Okay'
+        label: 'Okay',
+        severity: 'warn'
       },
       accept: () => {
         this.accountService.deleteAccount(id).subscribe({
