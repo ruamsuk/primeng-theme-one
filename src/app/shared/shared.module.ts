@@ -6,7 +6,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { CardModule } from 'primeng/card';
 import { PrimeTemplate } from 'primeng/api';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
 import { TieredMenuModule } from 'primeng/tieredmenu';
 import { MenubarModule } from 'primeng/menubar';
@@ -22,6 +22,9 @@ import { TooltipModule } from 'primeng/tooltip';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { DatePickerModule } from 'primeng/datepicker';
 import { ImageModule } from 'primeng/image';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { TreeSelectModule } from 'primeng/treeselect';
+import { MessageModule } from 'primeng/message';
 
 @NgModule({
   imports: [
@@ -29,6 +32,7 @@ import { ImageModule } from 'primeng/image';
     ButtonModule,
     CardModule,
     DatePickerModule,
+    FormsModule,
     TableModule,
     ToolbarModule,
     ToastModule,
@@ -51,11 +55,16 @@ import { ImageModule } from 'primeng/image';
     TableModule,
     InputSwitchModule,
     ImageModule,
+    FloatLabelModule,
+    TreeSelectModule,
+    MessageModule,
   ],
   exports: [
     AvatarModule,
     ButtonModule,
     CardModule,
+    DatePickerModule,
+    FormsModule,
     TableModule,
     ToolbarModule,
     ToastModule,
@@ -78,6 +87,9 @@ import { ImageModule } from 'primeng/image';
     TableModule,
     InputSwitchModule,
     ImageModule,
+    FloatLabelModule,
+    TreeSelectModule,
+    MessageModule,
   ],
   providers: []
 })

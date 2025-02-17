@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ViewChild } from '@angular/core';
 import { debounceTime, distinctUntilChanged, Observable, of, switchMap, take, } from 'rxjs';
 import { ConfirmationService } from 'primeng/api';
 import { AccountService } from '../services/account.service';
@@ -9,14 +9,15 @@ import { SharedModule } from '../shared/shared.module';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { AccountsComponent } from './accounts.component';
 import { ThaiDatePipe } from '../pipe/thai-date.pipe';
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, NgClass } from '@angular/common';
 import { ToastService } from '../services/toast.service';
 import { DatePicker } from 'primeng/datepicker';
+import { Table } from 'primeng/table';
 
 @Component({
   selector: 'app-account-between-detail',
   standalone: true,
-  imports: [SharedModule, ThaiDatePipe, CurrencyPipe, DatePicker],
+  imports: [SharedModule, ThaiDatePipe, CurrencyPipe, DatePicker, NgClass],
   template: `
     @if (loading()) {
       <div class="loading-shade">
@@ -62,6 +63,7 @@ import { DatePicker } from 'primeng/datepicker';
     @if (account) {
       <div class="flex justify-around items-center mt-3">
         <p-table
+          #tb
           [value]="account"
           [scrollable]="true"
           [rowHover]="true"
@@ -72,9 +74,9 @@ import { DatePicker } from 'primeng/datepicker';
           <ng-template #caption>
             <div class="flex items-center justify-between">
               <span class="text-orange-400 font-bold text-2xl font-thasadith">
-                รายการของ: <span class="text-green-400"> {{ title }}</span>
+                รายการของ: <span class="text-green-400 ml-2"> {{ title }}</span>
               </span>
-              <p-button icon="pi pi-refresh"/>
+              <p-button icon="pi pi-refresh" (click)="resetAll(tb)"/>
             </div>
           </ng-template>
           <ng-template #header>
@@ -92,19 +94,19 @@ import { DatePicker } from 'primeng/datepicker';
               <th style="min-width: 150px">
                 <div>Action</div>
               </th>
-              <th></th>
+              <th>-</th>
             </tr>
           </ng-template>
           <ng-template #body let-account let-rowIndex="rowIndex">
-            <tr>
+            <tr [ngClass]="{ 'row-income': account.isInCome }">
               <td>{{ rowIndex + 1 }}</td>
-              <td>
+              <td [ngClass]="{ isIncome: account.isInCome }">
                 {{ account.date | thaiDate }}
               </td>
-              <td>
+              <td [ngClass]="{ isIncome: account.isInCome }">
                 {{ account.amount | currency: '' : '' }}
               </td>
-              <td>
+              <td [ngClass]="{ isIncome: account.isInCome }">
                 {{ account.remark }}
               </td>
               <td>
@@ -113,25 +115,29 @@ import { DatePicker } from 'primeng/datepicker';
                     pTooltip="แก้ไข"
                     (click)="showDialog(account)"
                     tooltipPosition="bottom"
-                    class="pi pi-pen-to-square mx-2 text-orange-600"
+                    class="pi pi-pen-to-square mx-2 text-sky-600 cursor-pointer"
                   ></i>
                   <p-confirmPopup/>
                   <i
                     pTooltip="ลบข้อมูล"
                     (click)="conf_($event, account.id)"
                     tooltipPosition="bottom"
-                    class="pi pi-trash text-red-500"
+                    class="pi pi-trash text-amber-500 cursor-pointer"
                   ></i>
                 }
               </td>
-              <td></td>
+              <td [ngClass]="{ isIncome: account.isInCome }">
+                @if (account.isInCome) {
+                  <span>รายรับ</span>
+                }
+              </td>
             </tr>
           </ng-template>
           <ng-template #emptymessage>
             <tr>
               <td colspan="6">
-                <span class="text-center text-orange-400 text-xl font-bold">
-                  ไม่พบข้อมูลรายจ่าย
+                <span class="center text-orange-400 text-lg ">
+                  ไม่มีข้อมูลรายรับ, รายจ่าย
                 </span>
               </td>
             </tr>
@@ -140,17 +146,31 @@ import { DatePicker } from 'primeng/datepicker';
             <div
               class="flex items-center justify-around font-thasadith font-bold text-lg/10 bg-gray-900">
               <span>
-                รวม:
-                <span class="text-orange-400 mx-3">
-                  {{ account ? account.length : 0 }}
+                รายรับ:
+                <span class="text-green-500 mx-3">
+                  {{ totalIncome() | currency: '':'' }}
                 </span>
-                รายการ.
+                บาท
               </span>
               <span>
-                เป็นเงิน:
+                รายจ่าย:
                 <span class="text-orange-400 mx-3">
-                  {{ getTotal() | currency: '' : '' }}
+                   {{ totalExpense() | currency: '':'' }}
                 </span>
+                บาท
+              </span>
+              <span>
+                @if (balance() < 0) {
+                  เกินดุล:
+                  <span class="text-orange-400 mx-3">
+                    {{ balance() | currency: '' : '' }}
+                  </span>
+                } @else {
+                  คงเหลือ:
+                  <span class="text-green-500 mx-3">
+                    {{ balance() | currency: '' : '' }}
+                  </span>
+                }
                 บาท
               </span>
             </div>
@@ -166,7 +186,12 @@ export class AccountBetweenDetailComponent {
   searchDetail = new FormControl();
   loading = signal(false);
   admin = signal(false);
-  totalExpenses!: Account[];
+
+  totalIncome = signal(0);
+  totalExpense = signal(0);
+  balance = signal(0);
+
+  @ViewChild('tb') tb: Table | undefined;
 
   authService = inject(AuthService);
   message = inject(ToastService);
@@ -224,8 +249,13 @@ export class AccountBetweenDetailComponent {
         .subscribe({
           next: (data: any) => {
             this.account = data;
-            this.totalExpenses = data;
             this.loading.set(false);
+
+            // Call calculateTotals and log the results
+            const totals = this.calculateTotals();
+            this.totalIncome.set(totals.totalInCome);
+            this.totalExpense.set(totals.totalExpenses);
+            this.balance.set(totals.balance);
           },
           error: (error: any) => {
             this.loading.set(false);
@@ -236,6 +266,20 @@ export class AccountBetweenDetailComponent {
       return of(this.account);
     }
     return of(null);
+  }
+
+  calculateTotals() {
+    const totalInCome = this.account
+      .filter(account => account.isInCome)
+      .reduce((sum, account) => sum + account.amount, 0);
+
+    const totalExpenses = this.account
+      .filter(account => !account.isInCome)
+      .reduce((sum, account) => sum + account.amount, 0);
+
+    const balance = totalInCome - totalExpenses;
+
+    return {totalInCome, totalExpenses, balance};
   }
 
   /**
@@ -281,10 +325,6 @@ export class AccountBetweenDetailComponent {
   //   });
   // }
 
-  getTotal() {
-    return this.totalExpenses.reduce((total, n) => total + Number(n.amount), 0);
-  }
-
   showDialog(account: any) {
     let header = account ? 'แก้ไขรายการ' : 'เพิ่มรายการ';
 
@@ -306,9 +346,16 @@ export class AccountBetweenDetailComponent {
     });
   }
 
-  resetAll(): void {
-    this.searchDetail.reset();
-    this.selectedDates.reset();
+  resetAll(table: Table): void {
+    console.log(table);
+    table.clear();
+    this.searchDetail.setValue(''); // Clear search detail input
+    this.selectedDates.setValue(''); // Clear selected dates
+    this.title = '';
+    this.account = []; // Clear the account data
+    this.totalIncome.set(0); // Reset total income
+    this.totalExpense.set(0); // Reset total expense
+    this.balance.set(0);
   }
 
   onSelect() {

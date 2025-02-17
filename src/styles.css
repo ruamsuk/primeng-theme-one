@@ -6,9 +6,17 @@
 
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Leelawadee UI';
+  src: url('/assets/fonts/LeelaUIb.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 @theme {
   --font-sarabun: Sarabun, sans-serif;
   --font-thasadith: Thasadith, sans-serif;
+  --font-leera: 'Leelawadee UI', sans-serif;
 }
 
 html {

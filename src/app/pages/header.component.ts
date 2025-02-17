@@ -221,7 +221,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
           {
             label: 'แสดงวันที่กำหนด',
             icon: 'pi pi-book',
-            route: '/monthly',
+            command: () => this.router.navigateByUrl('/monthly'),
           },
         ],
       },

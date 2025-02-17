@@ -1,9 +1,4 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  HostListener,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit, } from '@angular/core';
 import { SharedModule } from '../shared/shared.module';
 import { FormControl } from '@angular/forms';
 import { catchError, Observable, of, startWith, switchMap, tap } from 'rxjs';
@@ -18,31 +13,35 @@ import { ToastService } from '../services/toast.service';
 @Component({
   selector: 'app-calculate-expenses-income',
   standalone: true,
-  imports: [SharedModule, InfinityToZeroPipe, AsyncPipe, CurrencyPipe, NgClass],
+  imports: [
+    SharedModule,
+    InfinityToZeroPipe,
+    AsyncPipe,
+    CurrencyPipe,
+    NgClass,
+  ],
   template: `
-    <div class="flex justify-content-center align-items-center h-15rem">
-      <p-card>
-        <p class="tasadith text-xl -mt-3 ml-2 text-green-400 text-center">
+    <div class="flex justify-center items-center h-15rem">
+      <p-card class=" mt-4 w-full md:w-[20rem] overflow-hidden">
+        <p class="font-tasadith text-xl -mt-3 my-2 text-green-400 text-center">
           รายปี
         </p>
-<!--        <p-floatLabel class="">
+        <p-floatLabel class="w-full px-2">
           <p-treeSelect
-            class="md:w-20rem"
-            containerStyleClass="w-15rem"
+            containerStyleClass="w-full"
             [formControl]="selectedYear"
             [options]="year"
             (onNodeSelect)="searchAllYear()"
-            placeholder="เลิอกปี"
             appendTo="body"
           />
-          <label for="treeSelect">เลือกปี</label>
-        </p-floatLabel>-->
+          <label for="treeSelect" class="ml-2">เลือกปี</label>
+        </p-floatLabel>
       </p-card>
     </div>
     @if (incomeExpenseSummaryArray$ | async; as summaryArray) {
       <ng-container>
         @if (summaryArray.length > 0) {
-          <div class="flex justify-content-center align-items-center -mt-5">
+          <div class="flex justify-center items-center mt-5">
             <div class="table-container">
               <p-table
                 [value]="summaryArray ?? []"
@@ -53,25 +52,25 @@ import { ToastService } from '../services/toast.service';
                 scrollHeight="400px"
                 class="table-container"
               >
-                <ng-template pTemplate="caption">
-                  <div class="flex justify-content-between">
-                    <span class="text-orange-400 font-bold text-2xl tasadith">
+                <ng-template #caption>
+                  <div class="flex justify-between">
+                    <span class="text-green-400 font-thasadith font-semibold text-xl ">
                       ค่าใช้จ่ายในรอบปี:
-                      <span class="ml-2 text-green-400 text-xl">{{
-                        showYear
-                      }}</span>
+                      <span class="ml-2 text-orange-400 text-lg">
+                        {{ showYear }}
+                      </span>
                     </span>
-                    <p-button icon="pi pi-refresh" />
+                    <p-button icon="pi pi-refresh"/>
                   </div>
                 </ng-template>
-                <ng-template pTemplate="header" let-columns>
+                <ng-template #header let-columns>
                   <tr>
                     @for (col of columns; track $index) {
                       <th>{{ col.header }}</th>
                     }
                   </tr>
                 </ng-template>
-                <ng-template pTemplate="body" let-rowData let-columns="columns">
+                <ng-template #body let-rowData let-columns="columns">
                   <tr>
                     <td>{{ rowData.index }}</td>
                     <td>{{ rowData.month }}</td>
@@ -91,7 +90,7 @@ import { ToastService } from '../services/toast.service';
                     </td>
                   </tr>
                 </ng-template>
-                <ng-template pTemplate="footer">
+                <ng-template #footer>
                   <tr>
                     <td colspan="2">รวม</td>
                     <td>
@@ -115,25 +114,27 @@ import { ToastService } from '../services/toast.service';
                     </td>
                   </tr>
                 </ng-template>
-                <ng-template pTemplate="emptymessage">
+                <ng-template #emptymessage>
                   <tr>
-                    <td
-                      colspan="6"
-                      class="text-center text-orange-400 text-2xl font-bold anuphon"
-                    >
-                      ไม่พบข้อมูล
+                    <td colspan="6">
+                      <span class="text-center text-orange-400 text-xl font-semibold">
+                        ไม่พบข้อมูล
+                      </span>
                     </td>
                   </tr>
                 </ng-template>
               </p-table>
             </div>
           </div>
+        } @else {
+          <div class="text-center text-orange-400 text-base md:text-lg  mt-5">
+          </div>
         }
       </ng-container>
     }
     @if (loading) {
       <div class="loading-shade">
-        <p-progressSpinner strokeWidth="4" ariaLabel="loading" />
+        <p-progressSpinner strokeWidth="4" ariaLabel="loading"/>
       </div>
     }
   `,
@@ -158,11 +159,11 @@ export class CalculateExpensesIncomeComponent implements OnInit {
   totalBalance: number = 0;
 
   cols: any[] = [
-    { field: 'index', header: 'ลำดับ' },
-    { field: 'month', header: 'เดือน' },
-    { field: 'income', header: 'รายรับ', pipe: 'currency' },
-    { field: 'expense', header: 'รายจ่าย', pipe: 'currency' },
-    { field: 'balance', header: 'คงเหลือ', pipe: 'currency' },
+    {field: 'index', header: 'ลำดับ'},
+    {field: 'month', header: 'เดือน'},
+    {field: 'income', header: 'รายรับ', pipe: 'currency'},
+    {field: 'expense', header: 'รายจ่าย', pipe: 'currency'},
+    {field: 'balance', header: 'คงเหลือ', pipe: 'currency'},
   ];
 
   // Observables สำหรับเก็บข้อมูลและแปลงข้อมูลให้เหมาะกับการแสดงผล
@@ -172,7 +173,7 @@ export class CalculateExpensesIncomeComponent implements OnInit {
   constructor(
     private incomeExpenseService: IncomeExpenseService,
     private selectService: SelectorService,
-    private message: ToastService,
+    public message: ToastService,
     private cdr: ChangeDetectorRef,
   ) {
     this.selectService.getYear().then((year) => {
@@ -238,6 +239,6 @@ export class CalculateExpensesIncomeComponent implements OnInit {
 
         return summaryArray;
       }),
-    );
+    ); // <--
   }
 }
