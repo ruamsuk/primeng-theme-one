@@ -20,12 +20,6 @@ export class MonthlyService {
   constructor(private firestore: Firestore) {
   }
 
-  // loadMonthly(): Observable<Monthly[]> {
-  //   const db = collection(this.firestore, 'monthly');
-  //   const q = query(db, orderBy('datestart', 'desc'));
-  //   return collectionData(q, {idField: 'id'});
-  // }
-
   getSortedMonthlyData() {
     const collectionRef = collection(this.firestore, 'monthly');
     const queryRef = query(collectionRef);
@@ -47,29 +41,12 @@ export class MonthlyService {
   }
 
   addMonthly(monthly: any) {
-    const fake: Monthly = {
-      year: monthly.year,
-      datestart: new Date(monthly.datestart),
-      dateend: new Date(monthly.dateend),
-      month: monthly.month.label,
-    };
     const ref = collection(this.firestore, 'monthly');
-    return from(addDoc(ref, fake));
+    return from(addDoc(ref, monthly));
   }
 
-  updateMonthly(monthly: any) {
-    /**
-     * ค่า month ที่ส่งมาเป็น array {'label': 'ชื่อเดือน', ...}
-     *  ต้องแปลงเอาแต่ชื่อเดือนเท่านั้น
-     * */
-    const data = {
-      id: monthly.id,
-      year: monthly.year,
-      month: monthly.month.label,
-      datestart: monthly.datestart,
-      dateend: monthly.dateend,
-    };
-    const db = doc(this.firestore, 'monthly', `${monthly.id}`);
+  updateMonthly(data: any) {
+    const db = doc(this.firestore, 'monthly', `${data.id}`);
     return from(updateDoc(db, data));
   }
 

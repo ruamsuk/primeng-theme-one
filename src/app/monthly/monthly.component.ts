@@ -13,6 +13,7 @@ import { ConfirmationService } from 'primeng/api';
 import { Monthly } from '../models/monthly.model';
 import { AuthService } from '../services/auth.service';
 import { ChristianToThaiYearPipe } from '../pipe/christian-to-thai-year.pipe';
+import { EditMonthlyComponent } from './edit-monthly.component';
 
 @Component({
   selector: 'app-monthly',
@@ -40,6 +41,7 @@ import { ChristianToThaiYearPipe } from '../pipe/christian-to-thai-year.pipe';
             #tb
             [value]="monthly"
             [rows]="10"
+            [rowHover]="true"
             [rowsPerPageOptions]="[5, 10, 20, 30]"
             [paginator]="true"
             [globalFilterFields]="['details', 'remark']"
@@ -52,7 +54,7 @@ import { ChristianToThaiYearPipe } from '../pipe/christian-to-thai-year.pipe';
               <div class="flex items-center justify-between">
                 <span>
                   <p-button
-                    (click)="showDialog(Monthly)"
+                    (click)="editDialog(Monthly)"
                     [disabled]="!admin"
                     size="small"
                     icon="pi pi-plus"
@@ -115,7 +117,7 @@ import { ChristianToThaiYearPipe } from '../pipe/christian-to-thai-year.pipe';
                   @if (admin()) {
                     <i
                       pTooltip="แก้ไข"
-                      (click)="showDialog(month)"
+                      (click)="editDialog(month)"
                       tooltipPosition="bottom"
                       class="pi pi-pen-to-square mr-2 ml-2 text-sky-600"
                     ></i>
@@ -229,6 +231,21 @@ export class MonthlyComponent implements OnDestroy {
     });
   }
 
+  editDialog(month: any) {
+    let header = month ? `แก้ไขรายการ ${month.month}` : 'เพิ่มรายการ';
+    this.ref = this.dialogService.open(EditMonthlyComponent, {
+      data: month,
+      header: header,
+      width: '360px',
+      contentStyle: {overflow: 'auto'},
+      breakpoints: {
+        '960px': '360px',
+        '640px': '360px',
+        '390px': '360px',
+      },
+    });
+  }
+
   clear(table: Table) {
     table.clear();
     this.searchValue = '';
@@ -243,7 +260,15 @@ export class MonthlyComponent implements OnDestroy {
       target: event.target as EventTarget,
       message: 'ต้องการลบรายการนี้?',
       icon: 'pi pi-info-circle',
-      acceptButtonStyleClass: 'p-button-warning p-button-sm',
+      rejectButtonProps: {
+        label: 'Nope',
+        severity: 'secondary',
+        outlined: true
+      },
+      acceptButtonProps: {
+        label: 'Okay',
+        severity: 'warn'
+      },
       accept: () => {
         this.monthlyService.deleteMonth(id).subscribe({
           next: () =>
@@ -267,4 +292,6 @@ export class MonthlyComponent implements OnDestroy {
   ngOnDestroy() {
     if (this.ref) this.ref.destroy();
   }
+
+  protected readonly Number = Number;
 }

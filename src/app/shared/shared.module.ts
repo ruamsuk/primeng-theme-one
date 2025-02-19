@@ -25,10 +25,12 @@ import { ImageModule } from 'primeng/image';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { TreeSelectModule } from 'primeng/treeselect';
 import { MessageModule } from 'primeng/message';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 
 @NgModule({
   imports: [
     AvatarModule,
+    AutoCompleteModule,
     ButtonModule,
     CardModule,
     DatePickerModule,
@@ -61,6 +63,7 @@ import { MessageModule } from 'primeng/message';
   ],
   exports: [
     AvatarModule,
+    AutoCompleteModule,
     ButtonModule,
     CardModule,
     DatePickerModule,

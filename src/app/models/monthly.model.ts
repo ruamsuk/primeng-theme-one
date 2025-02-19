@@ -4,3 +4,10 @@ export interface Monthly {
   datestart?: Date;
   dateend?: Date;
 }
+
+export interface TreeSelectOption {
+  label: string;
+  parent?: any;
+  year: string;
+  month: string;
+}

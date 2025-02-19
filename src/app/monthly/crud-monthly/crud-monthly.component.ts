@@ -17,14 +17,15 @@ import { ToastService } from '../../services/toast.service';
     <form [formGroup]="monthlyForm" (ngSubmit)="saveMonthly($event)">
       <div class="grid grid-cols-1 gap-4">
         <div class="mt-5">
-          <label for="treeSelect" class="ml-2">เดือน</label>
-          <p-treeSelect
-            class=""
-            containerStyleClass="w-full"
+          <label for="autoComplete" class="ml-2">เดือน</label>
+          <p-autoComplete
             formControlName="month"
-            [options]="_month"
+            [suggestions]="filteredMonth"
+            [dropdown]="true"
+            (completeMethod)="filterMonth($event)"
             appendTo="body"
             placeholder="เลิอกเดือน"
+            styleClass="w-full"
           />
         </div>
         <div>
@@ -100,16 +101,12 @@ export class CrudMonthlyComponent implements OnInit, OnDestroy {
   monthly!: Monthly;
   _month: any[] = [];
   year: any[] = [];
+  filteredMonth: any;
+
   monthlyForm = new FormGroup({
     id: new FormControl(null),
-    month: new FormControl({
-      label: 'มกราคม',
-      parent: undefined,
-    } as unknown as Monthly),
-    year: new FormControl({
-      label: new Date().getFullYear() + 543,
-      parent: undefined,
-    }, Validators.required),
+    month: new FormControl(''),
+    year: new FormControl('', Validators.required),
     datestart: new FormControl('', Validators.required),
     dateend: new FormControl('', Validators.required),
   });
@@ -122,31 +119,53 @@ export class CrudMonthlyComponent implements OnInit, OnDestroy {
     private monthlyService: MonthlyService,
     private selectService: SelectorService,
   ) {
-    if (this.monthlyData.data) {
-      this.monthlyForm.patchValue({
-        id: this.monthlyData.data.id,
-        month: this.monthlyData.data.month.label,
-        year: this.monthlyData.data.year.label,
-        datestart: this.monthlyData.data.datestart.toDate(),
-        dateend: this.monthlyData.data.dateend.toDate(),
-      });
-    }
+
     this.selectService.getMonth().then((month) => {
       this._month = month;
     });
     this.selectService.getYear().then((year) => {
-      this.year = year;
+      this.year = year.map(y => ({
+        ...y,
+        label: `${y.label} (${Number(y.label) - 543})`
+      }));
+    });
+  }
+
+  filterMonth(event: any) {
+    const query = event.query.toLowerCase();
+    let _month: { label: string, value: string }[];
+
+    this.selectService.getMonth().then((month) => {
+      _month = month;
+      this.filteredMonth = _month.filter((month) =>
+        month.label.toLowerCase().includes(query));
     });
   }
 
   ngOnInit() {
+    if (this.monthlyData.data) {
+      this.monthlyForm.patchValue({
+        id: this.monthlyData.data.id,
+        month: this.monthlyData.data.month,
+        year: this.monthlyData.data.year,
+        datestart: this.monthlyData.data.datestart.toDate(),
+        dateend: this.monthlyData.data.dateend.toDate(),
+      });
+      console.log(this.monthlyForm.controls['month'].value);
+      console.log(this.monthlyData.data.month);
+      console.log(this.monthlyData.data.year);
+      /**
+       * ต่อไปเปลี่ยนปีจาก treeSelect เป็น autoComplete เหมือนเดือน
+       * */
+    }
   }
 
   saveMonthly(event: Event) {
     if (this.monthlyForm.invalid) return;
 
     const monthly = this.monthlyForm.value;
-    const convertedYear = Number(monthly.year?.label) - 543;
+    const convertedYear = Number(String(monthly.year).split(' ')[0]) - 543;
+    // const convertedYear = Number(monthly.year?.label.split(' ')[0]) - 543;
     const dataToSave = {
       ...monthly,
       year: convertedYear,
@@ -179,6 +198,7 @@ export class CrudMonthlyComponent implements OnInit, OnDestroy {
         });
       }
     } else {
+      console.log(JSON.stringify(dataToSave, null, 2));
       this.monthlyService.addMonthly(dataToSave).subscribe({
         next: () =>
           this.message.showSuccess('Successfully', 'Saved monthly.'),
